@@ -27,6 +27,7 @@ int main() {
     int tiros = 0;
     int acertos = 0;
     int pontos = 0;
+    int navios_afundados = 0;
 
     while (tiros < MAX_TIROS) {
         int ip_index = rand() % total_ips;
@@ -41,27 +42,28 @@ int main() {
         FILE *resp = popen(comando, "r");
         if (resp) {
             char buffer[256];
-            fgets(buffer, sizeof(buffer), resp);
+            if (fgets(buffer, sizeof(buffer), resp)) {
+                printf("Resposta: %s", buffer);
 
-            printf("Resposta: %s", buffer);
+                if (strstr(buffer, "acerto")) {
+                    acertos++;
+                    navios_afundados++;
 
-            if (strstr(buffer, "acerto")) {
-                acertos++;
-
-                if (strstr(buffer, "porta_avioes")) pontos += 5;
-                else if (strstr(buffer, "submarino")) pontos += 3;
-                else if (strstr(buffer, "fragata")) pontos += 2;
+                    if (strstr(buffer, "porta_avioes")) pontos += 5;
+                    else if (strstr(buffer, "submarino")) pontos += 3;
+                    else if (strstr(buffer, "fragata")) pontos += 2;
+                }
             }
-
             pclose(resp);
         }
 
         tiros++;
     }
 
-    printf("\n===== RELATORIO =====\n");
+    printf("\n===== RELATORIO FINAL =====\n");
     printf("Tiros: %d\n", tiros);
     printf("Acertos: %d\n", acertos);
+    printf("Navios afundados: %d\n", navios_afundados);
     printf("Pontos: %d\n", pontos);
 
     return 0;

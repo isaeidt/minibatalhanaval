@@ -7,22 +7,18 @@
 #include <sys/select.h>
 #include "ipc.h"
 
-// função que vem do navios.c
 void iniciar_navios();
 
 int main() {
 
-    // Criar FIFO
     mkfifo(FIFO_NAME, 0666);
 
-    // Abrir FIFO para leitura (NÃO BLOQUEANTE)
     int fd = open(FIFO_NAME, O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
         perror("Erro ao abrir FIFO");
         return 1;
     }
 
-    // Iniciar navios
     iniciar_navios();
 
     printf("Miniwebserver rodando...\n");
@@ -48,12 +44,14 @@ int main() {
             if (bytes > 0) {
                 buffer[bytes] = '\0';
 
-                // Exemplo recebido: ID,TIPO,LINHA,COLUNA
-                printf("Recebido: %s", buffer);
+                int id, linha, coluna;
+                char tipo[50];
 
-                // Aqui você pode depois:
-                // - atualizar estado.json
-                // - atualizar estrutura do tabuleiro
+                sscanf(buffer, "%d,%[^,],%d,%d", &id, tipo, &linha, &coluna);
+
+                printf("Navio %d (%s) na linha %d coluna %d\n",
+                       id, tipo, linha, coluna);
+
             }
         }
     }
