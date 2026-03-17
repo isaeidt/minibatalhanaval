@@ -1,8 +1,8 @@
 #ifndef IPC_H
 #define IPC_H
 
-/* * Arquivo de cabeçalho compartilhado entre o Miniwebserver (Isa) e os Navios (Haydee).
- * Define as constantes para a comunicação via FIFO (Pipe Nomeado).
+/* * Arquivo de cabeçalho compartilhado entre o Miniwebserver  e os Navios .
+ * Define as constantes para a comunicação via FIFO .
  */
 
 // Nome do arquivo especial da FIFO que será criado na raiz do projeto
