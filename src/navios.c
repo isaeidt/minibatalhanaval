@@ -25,15 +25,14 @@ void loop_navio(int id, char *tipo, int linha) {
         }
 
         char buffer[BUFFER_SIZE];
-        snprintf(buffer, sizeof(buffer), "%d,%s,%d,%d\n",
-                 id, tipo, linha, coluna);
+        snprintf(buffer, sizeof(buffer), "%d,%s,%d,%d,%d\n",
+                 id, tipo, linha, coluna, getpid());
 
         write(fd, buffer, strlen(buffer));
     }
 }
 
 void iniciar_navios() {
-
     if (fork() == 0) {
         loop_navio(1, TIPO_PORTA_AVIOES, 0);
         exit(0);

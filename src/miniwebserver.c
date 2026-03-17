@@ -7,6 +7,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h>
 #include "ipc.h"
 
 #define PORT 8080
@@ -22,12 +23,12 @@ typedef struct {
 } Navio;
 
 Navio navios[6] = {
-    {1, TIPO_PORTA_AVIOES, 0, -1, 1, 5},
-    {2, TIPO_SUBMARINO, 1, -1, 1, 3},
-    {3, TIPO_SUBMARINO, 2, -1, 1, 3},
-    {4, TIPO_FRAGATA, 3, -1, 1, 2},
-    {5, TIPO_FRAGATA, 4, -1, 1, 2},
-    {6, TIPO_FRAGATA, 5, -1, 1, 2}
+    {1, TIPO_PORTA_AVIOES, 0, -1, 1, 5, 0},
+    {2, TIPO_SUBMARINO, 1, -1, 1, 3, 0},
+    {3, TIPO_SUBMARINO, 2, -1, 1, 3, 0},
+    {4, TIPO_FRAGATA, 3, -1, 1, 2, 0},
+    {5, TIPO_FRAGATA, 4, -1, 1, 2, 0},
+    {6, TIPO_FRAGATA, 5, -1, 1, 2, 0}
 };
 
 int board_ataques[10][10];
@@ -93,6 +94,10 @@ void processar_tiro(int client_socket, int linha, int coluna) {
         navios[hit_index].ativo = 0;
 
         pontuacao += navios[hit_index].pontos; 
+
+        if (navios[hit_index].pid > 0) {
+            kill(navios[hit_index].pid, SIGKILL);
+        }
 
         sprintf(response, "HTTP/1.1 200 OK\r\n\r\n{\"resultado\":\"acerto\", \"tipo\":\"%s\", \"pontos\":%d}\n", 
                 navios[hit_index].tipo, navios[hit_index].pontos);
@@ -200,13 +205,14 @@ int main() {
                 buffer[bytes] = '\0';
                 char *linha_msg = strtok(buffer, "\n");
                 while (linha_msg != NULL) {
-                    int id, linha, coluna;
+                    int id, linha, coluna, pid;
                     char tipo[50];
-                    if (sscanf(linha_msg, "%d,%[^,],%d,%d", &id, tipo, &linha, &coluna) == 4) {
+                    if (sscanf(linha_msg, "%d,%[^,],%d,%d,%d", &id, tipo, &linha, &coluna, &pid) == 5) {
                         for (int i = 0; i < 6; i++) {
                             if (navios[i].id == id && navios[i].ativo) {
                                 navios[i].linha = linha;
                                 navios[i].coluna = coluna;
+                                navios[i].pid = pid;
                                 atualizar_json_estado();
                                 break;
                             }
