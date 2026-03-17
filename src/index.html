@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Batalha Naval - Estado Local</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #0b1a2a;
+        color: white;
+        text-align: center;
+    }
+
+    h1 {
+        margin-top: 20px;
+    }
+
+    #tabuleiro {
+        display: grid;
+        grid-template-columns: repeat(10, 40px);
+        gap: 5px;
+        justify-content: center;
+        margin: 20px auto;
+    }
+
+    .celula {
+        width: 40px;
+        height: 40px;
+        background-color: #1e3a5f;
+        border: 1px solid #ccc;
+    }
+
+    .navio {
+        background-color: #2ecc71;
+    }
+
+    .agua {
+        background-color: #3498db;
+    }
+
+    .acerto {
+        background-color: #e74c3c;
+    }
+
+    #info {
+        margin-top: 20px;
+    }
+
+    #historico {
+        margin-top: 20px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: left;
+        background: #12263a;
+        padding: 10px;
+        border-radius: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>🛟 Batalha Naval 🛟</h1>
+
+<div id="tabuleiro"></div>
+
+<div id="info">
+    <p><strong>Pontuação:</strong> <span id="pontuacao">0</span></p>
+</div>
+
+<div id="historico">
+    <h3>Histórico de tiros</h3>
+    <ul id="listaHistorico"></ul>
+</div>
+
+<script>
+const tamanho = 10;
+
+// cria tabuleiro vazio
+function criarTabuleiro() {
+    const tabuleiro = document.getElementById("tabuleiro");
+    tabuleiro.innerHTML = "";
+
+    for (let i = 0; i < tamanho * tamanho; i++) {
+        const div = document.createElement("div");
+        div.classList.add("celula");
+        div.id = "cel_" + i;
+        tabuleiro.appendChild(div);
+    }
+}
+
+// atualiza tela com JSON do servidor
+function atualizarTela(dados) {
+    criarTabuleiro();
+
+    // NAVIOS
+    dados.navios.forEach(n => {
+        const index = n.linha * tamanho + n.coluna;
+        document.getElementById("cel_" + index).classList.add("navio");
+    });
+
+    // ATAQUES (teu backend usa "ataques", não "tiros")
+    dados.ataques.forEach(t => {
+        const index = t.linha * tamanho + t.coluna;
+
+        if (t.resultado === 2) {
+            document.getElementById("cel_" + index).classList.add("acerto");
+        } else if (t.resultado === 1) {
+            document.getElementById("cel_" + index).classList.add("agua");
+        }
+    });
+
+    // histórico simples
+    const lista = document.getElementById("listaHistorico");
+    lista.innerHTML = "";
+
+    dados.ataques.slice(-10).reverse().forEach(t => {
+        const li = document.createElement("li");
+
+        let texto = (t.resultado === 2) ? "ACERTO" : "ÁGUA";
+        li.textContent = `(${t.linha}, ${t.coluna}) -> ${texto}`;
+
+        lista.appendChild(li);
+    });
+}
+
+// fetch automático
+function atualizarDados() {
+    fetch("http://127.0.0.1:8080/estado_local")
+        .then(res => res.json())
+        .then(dados => atualizarTela(dados))
+        .catch(err => console.error("Erro:", err));
+}
+
+// inicialização
+criarTabuleiro();
+setInterval(atualizarDados, 2000); // atualiza a cada 2s
+</script>
+
+</body>
+</html>

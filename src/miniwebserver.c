@@ -18,6 +18,7 @@ typedef struct {
     int coluna;
     int ativo;
     int pontos;
+    pid_t pid; 
 } Navio;
 
 Navio navios[6] = {
@@ -30,6 +31,7 @@ Navio navios[6] = {
 };
 
 int board_ataques[10][10];
+int pontuacao = 0;
 
 void iniciar_navios();
 
@@ -48,7 +50,7 @@ void atualizar_json_estado() {
         }
     }
     
-    fprintf(f, "\n],\n\"ataques\": [\n");
+    fprintf(f, "\n],\n\"pontuacao\": %d,\n\"ataques\": [\n", pontuacao);
     first = 1;
     for (int l = 0; l < 10; l++) {
         for (int c = 0; c < 10; c++) {
@@ -89,6 +91,9 @@ void processar_tiro(int client_socket, int linha, int coluna) {
     if (hit_index != -1) {
         board_ataques[linha][coluna] = 2;
         navios[hit_index].ativo = 0;
+
+        pontuacao += navios[hit_index].pontos; 
+
         sprintf(response, "HTTP/1.1 200 OK\r\n\r\n{\"resultado\":\"acerto\", \"tipo\":\"%s\", \"pontos\":%d}\n", 
                 navios[hit_index].tipo, navios[hit_index].pontos);
     } else {
