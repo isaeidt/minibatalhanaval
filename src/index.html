@@ -95,6 +95,9 @@ function criarTabuleiro() {
 function atualizarTela(dados) {
     criarTabuleiro();
 
+    //Atualiza pontuação 
+    document.getElementById("pontuacao").textContent = dados.pontuacao;
+
     // NAVIOS
     dados.navios.forEach(n => {
         const index = n.linha * tamanho + n.coluna;
